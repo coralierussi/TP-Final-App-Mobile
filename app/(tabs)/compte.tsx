@@ -1,10 +1,19 @@
 import { Text, View, StyleSheet } from 'react-native';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function TabTwoScreen() {
   return (
-    <ParallaxScrollView>
+    <ParallaxScrollView
+    headerImage={
+            <IconSymbol
+              size={310}
+              color="black"
+              name="person.fill"
+            />
+          }
+    >
       <View>
         <Text style={styles.title}>Mon compte </Text>
       </View>
