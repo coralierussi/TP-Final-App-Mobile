@@ -7,19 +7,30 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<null | Location.LocationObject>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleGetLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission refusée', 'La permission de localisation est requise.');
-        return;
+  const handleToggleLocation = async () => {
+    if (location) {
+      // Si localisation affichée, on la cache
+      setLocation(null);
+    } else {
+      // Sinon on demande la localisation
+      setLoading(true);
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission refusée', 'La permission de localisation est requise.');
+          setLoading(false);
+          return;
+        }
+
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation(currentLocation);
+      } catch (error) {
+        Alert.alert('Erreur', 'Impossible d’obtenir la localisation.');
+      } finally {
+        setLoading(false);
       }
-
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible d’obtenir la localisation.');
     }
   };
 
@@ -36,7 +47,11 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>Localisation</Text>
 
-        <Button title="Afficher ma localisation" onPress={handleGetLocation} />
+        <Button
+          title={location ? "Cacher la localisation" : "Afficher ma localisation"}
+          onPress={handleToggleLocation}
+          disabled={loading}
+        />
 
         {location && (
           <View style={styles.stepContainer}>
@@ -54,21 +69,9 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   stepContainer: {
     gap: 8,
     marginTop: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
   title: {
     fontSize: 24,
