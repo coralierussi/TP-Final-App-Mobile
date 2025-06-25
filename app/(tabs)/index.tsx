@@ -9,30 +9,49 @@ export default function HomeScreen() {
   const [location, setLocation] = useState<null | Location.LocationObject>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleToggleLocation = async () => {
-    if (location) {
-      // Si localisation affichée, on la cache
-      setLocation(null);
-    } else {
-      // Sinon on demande la localisation
-      setLoading(true);
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission refusée', 'La permission de localisation est requise.');
-          setLoading(false);
-          return;
-        }
-
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        setLocation(currentLocation);
-      } catch (error) {
-        Alert.alert('Erreur', 'Impossible d’obtenir la localisation.');
-      } finally {
+const handleToggleLocation = async () => {
+  if (location) {
+    setLocation(null);
+  } else {
+    setLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission refusée', 'La permission de localisation est requise.');
         setLoading(false);
+        return;
       }
+
+      const currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation(currentLocation);
+
+      const data = {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        timestamp: currentLocation.timestamp,
+      };
+
+      const response = await fetch('https://d5d1-37-64-102-102.ngrok-free.app/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        Alert.alert('Succès', 'Localisation envoyée au serveur');
+      } else {
+        Alert.alert('Erreur', 'Impossible d’envoyer la localisation');
+      }
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible d’obtenir ou d’envoyer la localisation.');
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
+};
+
+
 
   return (
     <ParallaxScrollView
