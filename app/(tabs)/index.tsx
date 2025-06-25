@@ -38,7 +38,7 @@ const handleToggleLocation = async () => {
       });
 
       if (response.ok) {
-        Alert.alert('Succès', 'Localisation envoyée au serveur');
+        Alert.alert('Succès');
       } else {
         Alert.alert('Erreur', 'Impossible d’envoyer la localisation');
       }
